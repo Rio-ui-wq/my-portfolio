@@ -13,14 +13,33 @@ function BookDetail() {
   const [records, setRecords] = useState([]);
 
   useEffect(() => {
-    fetch(`https://www.googleapis.com/books/v1/volumes/${bookId}?key=${API_KEY}`)
-      .then(res => res.json())
-      .then(data => setBook(data));
-  }, [bookId]);
+  fetch(`https://www.googleapis.com/books/v1/volumes/${bookId}?key=${API_KEY}`)
+    .then(res => res.json())
+    .then(data => setBook(data));
 
-  const handleRecord = () => {
-    setRecords([...records, { progress, rating }]);
+  fetch(`http://localhost:3001/records/${bookId}`)
+    .then(res => res.json())
+    .then(data => setRecords(data));
+}, [bookId]);
+
+  const handleRecord = async () => {
+  if (!progress || !rating) return;
+  
+  const newRecord = {
+    bookId,
+    bookTitle: book.volumeInfo.title,
+    progress,
+    rating
   };
+
+  await fetch("http://localhost:3001/records", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(newRecord)
+  });
+
+  setRecords([...records, { progress, rating }]);
+};
 
   if (!book) return <div className="book-search"><p>読み込み中...</p></div>;
 
