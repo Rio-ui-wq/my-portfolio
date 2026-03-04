@@ -1,0 +1,118 @@
+@import url('https://fonts.googleapis.com/css2?family=Noto+Serif+JP:wght@400;700&display=swap');
+
+* {
+  box-sizing: border-box;
+}
+
+.book-search {
+  max-width: 680px;
+  margin: 60px auto;
+  padding: 0 24px;
+  font-family: 'Noto Serif JP', serif;
+  color: #2c2c2c;
+}
+
+.book-search h1 {
+  font-size: 1.6rem;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  border-bottom: 2px solid #2c2c2c;
+  padding-bottom: 12px;
+  margin-bottom: 32px;
+}
+
+.book-search h2 {
+  font-size: 1.1rem;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  margin-bottom: 16px;
+}
+
+.search-bar {
+  display: flex;
+  gap: 8px;
+  margin-bottom: 32px;
+}
+
+.search-bar input {
+  flex: 1;
+  padding: 10px 14px;
+  border: 1px solid #ccc;
+  border-radius: 2px;
+  font-family: 'Noto Serif JP', serif;
+  font-size: 0.95rem;
+  outline: none;
+}
+
+.search-bar input:focus {
+  border-color: #2c2c2c;
+}
+
+.search-bar button {
+  padding: 10px 20px;
+  background: #2c2c2c;
+  color: #fff;
+  border: none;
+  border-radius: 2px;
+  font-family: 'Noto Serif JP', serif;
+  font-size: 0.95rem;
+  cursor: pointer;
+}
+
+.search-bar button:hover {
+  background: #555;
+}
+
+.book-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 16px 0;
+  border-bottom: 1px solid #e8e8e8;
+}
+
+.book-info p {
+  margin: 0;
+}
+
+.book-title {
+  font-size: 1rem;
+  font-weight: 700;
+}
+
+.book-author {
+  font-size: 0.85rem;
+  color: #888;
+  margin-top: 4px !important;
+}
+
+.add-button {
+  padding: 6px 14px;
+  background: transparent;
+  border: 1px solid #2c2c2c;
+  border-radius: 2px;
+  font-family: 'Noto Serif JP', serif;
+  font-size: 0.85rem;
+  cursor: pointer;
+  white-space: nowrap;
+}
+
+.add-button:hover {
+  background: #2c2c2c;
+  color: #fff;
+}
+
+.selected-section {
+  margin-top: 0;
+  margin-bottom: 48px;
+  padding: 24px;
+  border: 1px solid #2c2c2c;
+  border-radius: 2px;
+  
+}
+
+.selected-item {
+  padding: 12px 0;
+  border-bottom: 1px solid #e8e8e8;
+  font-size: 0.95rem;
+}

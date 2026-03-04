@@ -1,11 +1,14 @@
+import { Routes, Route } from "react-router-dom";
 import BookSearch from "./BookSearch";
+import BookDetail from "./BookDetail";
 
 function App() {
-  
   return (
     <div className="App">
-      <h1>読書離脱率記録アプリ</h1>
-      <BookSearch />
+      <Routes>
+        <Route path="/" element={<BookSearch />} />
+        <Route path="/book/:bookId" element={<BookDetail />} />
+      </Routes>
     </div>
   );
 }
