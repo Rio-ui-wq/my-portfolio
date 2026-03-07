@@ -4,7 +4,7 @@ import { LineChart, Line, XAxis, YAxis, Tooltip, ResponsiveContainer } from "rec
 
 const API_KEY = import.meta.env.VITE_GOOGLE_BOOKS_API_KEY;
 
-function BookDetail() {
+function BookDetail({ user }) {
   const { bookId } = useParams();
   const navigate = useNavigate();
   const [book, setBook] = useState(null);
@@ -12,12 +12,18 @@ function BookDetail() {
   const [rating, setRating] = useState(3);
   const [records, setRecords] = useState([]);
 
-  useEffect(() => {
+  const [allRecords, setAllRecords] = useState([]);
+
+useEffect(() => {
   fetch(`https://www.googleapis.com/books/v1/volumes/${bookId}?key=${API_KEY}`)
     .then(res => res.json())
     .then(data => setBook(data));
 
   fetch(`http://localhost:3001/records/${bookId}`)
+    .then(res => res.json())
+    .then(data => setAllRecords(data));
+
+  fetch(`http://localhost:3001/records/${bookId}/mine?userId=${user.uid}`)
     .then(res => res.json())
     .then(data => setRecords(data));
 }, [bookId]);
@@ -29,7 +35,9 @@ function BookDetail() {
     bookId,
     bookTitle: book.volumeInfo.title,
     progress,
-    rating
+    rating,
+    userId: user.uid,
+    userDisplayName: user.displayName
   };
 
   await fetch("http://localhost:3001/records", {
@@ -71,26 +79,46 @@ function BookDetail() {
         </div>
       </div>
 
-      {records.length > 0 && (
-        <div style={{ marginTop: "32px" }}>
-          <h2>記録グラフ</h2>
-          <ResponsiveContainer width="100%" height={200}>
-            <LineChart data={records}>
-              <XAxis dataKey="progress" tickFormatter={(v) => `${v}%`} />
-              <YAxis domain={[1, 5]} ticks={[1, 2, 3, 4, 5]} />
-              <Tooltip formatter={(value) => [`${value}`, "面白さ"]} labelFormatter={(label) => `${label}%時点`} />
-              <Line type="monotone" dataKey="rating" stroke="#2c2c2c" dot={true} />
-            </LineChart>
-          </ResponsiveContainer>
-          <div style={{ marginTop: "16px" }}>
-            {records.map((r, i) => (
-              <div key={i} style={{ padding: "8px 0", borderBottom: "1px solid #eee", fontSize: "0.9rem" }}>
-                {r.progress}%時点 ／ 面白さ {r.rating} / 5
-              </div>
-            ))}
-          </div>
+      {(records.length > 0 || allRecords.length > 0) && (
+  <div style={{ marginTop: "32px" }}>
+    
+    {records.length > 0 && (
+      <>
+        <h2>自分の記録</h2>
+        <ResponsiveContainer width="100%" height={200}>
+          <LineChart data={records}>
+            <XAxis dataKey="progress" tickFormatter={(v) => `${v}%`} />
+            <YAxis domain={[1, 5]} ticks={[1, 2, 3, 4, 5]} />
+            <Tooltip formatter={(value) => [`${value}`, "面白さ"]} labelFormatter={(label) => `${label}%時点`} />
+            <Line type="monotone" dataKey="rating" stroke="#2c2c2c" dot={true} />
+          </LineChart>
+        </ResponsiveContainer>
+        <div style={{ marginTop: "16px" }}>
+          {records.map((r, i) => (
+            <div key={i} style={{ padding: "8px 0", borderBottom: "1px solid #eee", fontSize: "0.9rem" }}>
+              {r.progress}%時点 ／ 面白さ {r.rating} / 5
+            </div>
+          ))}
         </div>
-      )}
+      </>
+    )}
+
+    {allRecords.length > 0 && (
+      <>
+        <h2 style={{ marginTop: "40px" }}>みんなの記録</h2>
+        <ResponsiveContainer width="100%" height={200}>
+          <LineChart data={allRecords}>
+            <XAxis dataKey="progress" tickFormatter={(v) => `${v}%`} />
+            <YAxis domain={[1, 5]} ticks={[1, 2, 3, 4, 5]} />
+            <Tooltip formatter={(value) => [`${value}`, "面白さ"]} labelFormatter={(label) => `${label}%時点`} />
+            <Line type="monotone" dataKey="rating" stroke="#888" dot={true} />
+          </LineChart>
+        </ResponsiveContainer>
+      </>
+    )}
+
+  </div>
+)}
 
       <div style={{ marginTop: "32px" }}>
         <h2>記録を追加</h2>

@@ -5,7 +5,7 @@ import { useNavigate } from "react-router-dom";
 
 const API_KEY = import.meta.env.VITE_GOOGLE_BOOKS_API_KEY;
 
-function BookSearch() {
+function BookSearch({ user }) {
     const navigate = useNavigate();
   const [keyword, setKeyword] = useState("");
   const [books, setBooks] = useState([]);
