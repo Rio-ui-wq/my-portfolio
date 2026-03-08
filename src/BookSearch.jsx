@@ -1,79 +1,161 @@
 import { useState } from "react";
-import "./BookSearch.css";
 import { useNavigate } from "react-router-dom";
-
+import {
+  Box, Heading, Input, Button, Text, VStack, HStack,
+  Container, Tag
+} from "@chakra-ui/react";
 
 const API_KEY = import.meta.env.VITE_GOOGLE_BOOKS_API_KEY;
 
-function BookSearch({ user }) {
-    const navigate = useNavigate();
+function BookSearch({ user, selectedBooks, setSelectedBooks }) {
+  const navigate = useNavigate();
   const [keyword, setKeyword] = useState("");
   const [books, setBooks] = useState([]);
-  const [selectedBooks, setSelectedBooks] = useState([]);
+
 
   const handleSearch = async () => {
     if (!keyword) return;
-    
     const [titleRes, authorRes] = await Promise.all([
       fetch(`https://www.googleapis.com/books/v1/volumes?q=intitle:${keyword}&maxResults=20&key=${API_KEY}`),
       fetch(`https://www.googleapis.com/books/v1/volumes?q=inauthor:${keyword}&maxResults=20&key=${API_KEY}`)
     ]);
-    
     const titleData = await titleRes.json();
     const authorData = await authorRes.json();
-    
     const titleBooks = titleData.items || [];
     const authorBooks = authorData.items || [];
-    
     const ids = new Set(titleBooks.map(b => b.id));
     const merged = [...titleBooks, ...authorBooks.filter(b => !ids.has(b.id))];
-    
     setBooks(merged);
   };
 
   return (
-  <div className="book-search">
-    <h1>読書離脱率記録</h1>
-    <div className="selected-section">
-      <h2>追加した本</h2>
-      {selectedBooks.map((book) => (
-  <div
-    key={book.id}
-    className="selected-item"
-    onClick={() => navigate(`/book/${book.id}`)}
-    style={{ cursor: "pointer" }}
-  >
-    {book.volumeInfo.title}
-  </div>
-))}
-    </div>
-    <div className="search-bar">
-      <input
-        type="text"
-        value={keyword}
-        onChange={(e) => setKeyword(e.target.value)}
-        placeholder="タイトルや著者名を入力"
-      />
-      <button onClick={handleSearch}>検索</button>
-    </div>
+    <Box minH="100vh" bg="#f7f6f2" py={{ base: 8, md: 14 }}>
+      <Container maxW="620px" px={{ base: 5, md: 8 }}>
 
-    <div>
-      {books.map((book) => (
-        <div key={book.id} className="book-item">
-          <div className="book-info">
-            <p className="book-title">{book.volumeInfo.title}</p>
-            <p className="book-author">{book.volumeInfo.authors?.join(", ")}</p>
-          </div>
-          <button className="add-button" onClick={() => {
-            if (!selectedBooks.find(b => b.id === book.id)) {
-              setSelectedBooks([...selectedBooks, book]);
-            }
-          }}>追加</button>
-        </div>
-      ))}
-    </div>
-  </div>
-);
+        <Box mb={10}>
+          <Heading
+            fontFamily="'Noto Serif JP', serif"
+            fontSize={{ base: "2xl", md: "3xl" }}
+            color="#3a3a3a"
+            letterSpacing="0.05em"
+            mb={1}
+          >
+            読書離脱率記録
+          </Heading>
+          <Text fontSize="sm" color="#9a9a8a">
+            {user?.displayName} さんの本棚
+          </Text>
+        </Box>
+
+        {selectedBooks.length > 0 && (
+          <Box mb={8}>
+            <Text fontSize="xs" fontWeight="bold" color="#9a9a8a" letterSpacing="0.1em" mb={3}>
+              MY BOOKS
+            </Text>
+            <VStack align="stretch" spacing={2}>
+              {selectedBooks.map((book) => (
+                <Box
+                  key={book.id}
+                  p={4}
+                  bg="white"
+                  borderRadius="2xl"
+                  boxShadow="0 2px 8px rgba(0,0,0,0.06)"
+                  cursor="pointer"
+                  transition="all 0.2s"
+                  _hover={{ boxShadow: "0 4px 16px rgba(0,0,0,0.1)", transform: "translateY(-1px)" }}
+                  onClick={() => navigate(`/book/${book.id}`)}
+                >
+                  <Text fontSize="sm" color="#3a3a3a" fontWeight="medium">
+                    {book.volumeInfo.title}
+                  </Text>
+                  <Text fontSize="xs" color="#b0a99a" mt={0.5}>
+                    {book.volumeInfo.authors?.join(", ")}
+                  </Text>
+                </Box>
+              ))}
+            </VStack>
+          </Box>
+        )}
+
+        <Box mb={6}>
+          <Text fontSize="xs" fontWeight="bold" color="#9a9a8a" letterSpacing="0.1em" mb={3}>
+            SEARCH
+          </Text>
+          <HStack>
+            <Input
+              value={keyword}
+              onChange={(e) => setKeyword(e.target.value)}
+              onKeyDown={(e) => e.key === "Enter" && handleSearch()}
+              placeholder="タイトルや著者名を入力"
+              bg="white"
+              border="none"
+              borderRadius="2xl"
+              boxShadow="0 2px 8px rgba(0,0,0,0.06)"
+              fontSize="sm"
+              color="#3a3a3a"
+              _placeholder={{ color: "#c0b9aa" }}
+              _focus={{ boxShadow: "0 2px 12px rgba(0,0,0,0.12)", outline: "none" }}
+              h="48px"
+            />
+            <Button
+              onClick={handleSearch}
+              bg="#7a9e8e"
+              color="white"
+              borderRadius="2xl"
+              h="48px"
+              px={6}
+              fontSize="sm"
+              fontWeight="medium"
+              _hover={{ bg: "#6a8e7e" }}
+              flexShrink={0}
+            >
+              検索
+            </Button>
+          </HStack>
+        </Box>
+
+        <VStack align="stretch" spacing={3}>
+          {books.map((book) => (
+            <HStack
+              key={book.id}
+              p={4}
+              bg="white"
+              borderRadius="2xl"
+              boxShadow="0 2px 8px rgba(0,0,0,0.06)"
+              justify="space-between"
+              align="center"
+            >
+              <Box flex="1" mr={3}>
+                <Text fontSize="sm" fontWeight="medium" color="#3a3a3a">
+                  {book.volumeInfo.title}
+                </Text>
+                <Text fontSize="xs" color="#b0a99a" mt={0.5}>
+                  {book.volumeInfo.authors?.join(", ")}
+                </Text>
+              </Box>
+              <Button
+                size="sm"
+                bg={selectedBooks.find(b => b.id === book.id) ? "#e8f0ec" : "#f0f0ea"}
+                color={selectedBooks.find(b => b.id === book.id) ? "#7a9e8e" : "#8a8a7a"}
+                borderRadius="xl"
+                fontSize="xs"
+                fontWeight="medium"
+                _hover={{ bg: "#e8f0ec", color: "#7a9e8e" }}
+                onClick={() => {
+                  if (!selectedBooks.find(b => b.id === book.id)) {
+                    setSelectedBooks([...selectedBooks, book]);
+                  }
+                }}
+              >
+                {selectedBooks.find(b => b.id === book.id) ? "追加済み" : "追加"}
+              </Button>
+            </HStack>
+          ))}
+        </VStack>
+
+      </Container>
+    </Box>
+  );
 }
 
 export default BookSearch;

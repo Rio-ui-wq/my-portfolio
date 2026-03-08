@@ -2,11 +2,13 @@ import { Routes, Route } from "react-router-dom";
 import { useState, useEffect } from "react";
 import { auth, signInWithGoogle, signOutUser } from "./firebase";
 import { onAuthStateChanged } from "firebase/auth";
+import { Box, Button, Text, HStack } from "@chakra-ui/react";
 import BookSearch from "./BookSearch";
 import BookDetail from "./BookDetail";
 
 function App() {
   const [user, setUser] = useState(null);
+  const [selectedBooks, setSelectedBooks] = useState([]);
 
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, (currentUser) => {
@@ -17,52 +19,50 @@ function App() {
 
   if (!user) {
     return (
-      <div style={{ maxWidth: "680px", margin: "100px auto", padding: "0 24px", fontFamily: "Noto Serif JP, serif", textAlign: "center" }}>
-        <h1 style={{ fontSize: "1.6rem", marginBottom: "16px" }}>読書離脱率記録</h1>
-        <p style={{ color: "#888", marginBottom: "32px" }}>ログインして読書記録をはじめよう</p>
-        <button
-          onClick={signInWithGoogle}
-          style={{
-            padding: "12px 32px",
-            background: "#2c2c2c",
-            color: "#fff",
-            border: "none",
-            borderRadius: "2px",
-            fontSize: "1rem",
-            cursor: "pointer",
-            fontFamily: "inherit"
-          }}
-        >
-          Googleでログイン
-        </button>
-      </div>
+      <Box minH="100vh" bg="#f7f6f2" display="flex" alignItems="center" justifyContent="center">
+        <Box textAlign="center" fontFamily="'Noto Serif JP', serif">
+          <Text fontSize="2xl" color="#3a3a3a" mb={2}>読書離脱率記録</Text>
+          <Text fontSize="sm" color="#9a9a8a" mb={8}>ログインして読書記録をはじめよう</Text>
+          <Button
+            onClick={signInWithGoogle}
+            bg="#3a3a3a"
+            color="white"
+            borderRadius="2xl"
+            px={8}
+            py={6}
+            fontSize="sm"
+            _hover={{ bg: "#555" }}
+          >
+            Googleでログイン
+          </Button>
+        </Box>
+      </Box>
     );
   }
 
   return (
-    <div className="App">
-      <div style={{ maxWidth: "680px", margin: "0 auto", padding: "16px 24px", display: "flex", justifyContent: "flex-end" }}>
-        <span style={{ fontSize: "0.85rem", color: "#888", marginRight: "12px" }}>{user.displayName}</span>
-        <button
-          onClick={signOutUser}
-          style={{
-            padding: "4px 12px",
-            background: "transparent",
-            border: "1px solid #ccc",
-            borderRadius: "2px",
-            fontSize: "0.85rem",
-            cursor: "pointer",
-            fontFamily: "inherit"
-          }}
-        >
-          ログアウト
-        </button>
-      </div>
+    <Box bg="#f7f6f2" minH="100vh">
+      <Box maxW="680px" mx="auto" px={6} py={4}>
+        <HStack justify="flex-end">
+          <Text fontSize="xs" color="#9a9a8a">{user.displayName}</Text>
+          <Button
+            onClick={signOutUser}
+            size="xs"
+            variant="outline"
+            borderColor="#ccc"
+            color="#9a9a8a"
+            borderRadius="xl"
+            _hover={{ bg: "gray.100" }}
+          >
+            ログアウト
+          </Button>
+        </HStack>
+      </Box>
       <Routes>
-        <Route path="/" element={<BookSearch user={user} />} />
+        <Route path="/" element={<BookSearch user={user} selectedBooks={selectedBooks} setSelectedBooks={setSelectedBooks} />} />
         <Route path="/book/:bookId" element={<BookDetail user={user} />} />
       </Routes>
-    </div>
+    </Box>
   );
 }
 
