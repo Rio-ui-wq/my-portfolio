@@ -2,6 +2,7 @@ import { useParams, useNavigate } from "react-router-dom";
 import { useState, useEffect } from "react";
 import { LineChart, Line, XAxis, YAxis, Tooltip, ResponsiveContainer } from "recharts";
 
+const API_URL = import.meta.env.VITE_API_URL;
 const API_KEY = import.meta.env.VITE_GOOGLE_BOOKS_API_KEY;
 
 function BookDetail({ user }) {
@@ -19,11 +20,11 @@ useEffect(() => {
     .then(res => res.json())
     .then(data => setBook(data));
 
-  fetch(`http://localhost:3001/records/${bookId}`)
+  fetch(`${API_URL}/records/${bookId}`)
     .then(res => res.json())
     .then(data => setAllRecords(data));
 
-  fetch(`http://localhost:3001/records/${bookId}/mine?userId=${user.uid}`)
+  fetch(`${API_URL}/records/${bookId}/mine?userId=${user.uid}`)
     .then(res => res.json())
     .then(data => setRecords(data));
 }, [bookId]);
@@ -40,7 +41,7 @@ useEffect(() => {
     userDisplayName: user.displayName
   };
 
-  await fetch("http://localhost:3001/records", {
+  await fetch(`${API_URL}/records`, {
     method: "POST",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify(newRecord)
