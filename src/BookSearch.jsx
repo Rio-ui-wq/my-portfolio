@@ -7,7 +7,7 @@ import {
 
 const API_KEY = import.meta.env.VITE_GOOGLE_BOOKS_API_KEY;
 
-function BookSearch({ user, selectedBooks, setSelectedBooks }) {
+function BookSearch({ user, selectedBooks, setSelectedBooks, bookStatuses }) {
   const navigate = useNavigate();
   const [keyword, setKeyword] = useState("");
   const [books, setBooks] = useState([]);
@@ -48,34 +48,46 @@ function BookSearch({ user, selectedBooks, setSelectedBooks }) {
         </Box>
 
         {selectedBooks.length > 0 && (
-          <Box mb={8}>
-            <Text fontSize="xs" fontWeight="bold" color="#9a9a8a" letterSpacing="0.1em" mb={3}>
-              MY BOOKS
-            </Text>
-            <VStack align="stretch" spacing={2}>
-              {selectedBooks.map((book) => (
-                <Box
-                  key={book.id}
-                  p={4}
-                  bg="white"
-                  borderRadius="2xl"
-                  boxShadow="0 2px 8px rgba(0,0,0,0.06)"
-                  cursor="pointer"
-                  transition="all 0.2s"
-                  _hover={{ boxShadow: "0 4px 16px rgba(0,0,0,0.1)", transform: "translateY(-1px)" }}
-                  onClick={() => navigate(`/book/${book.id}`)}
-                >
+        <Box mb={8}>
+          <Text fontSize="xs" fontWeight="bold" color="#9a9a8a" letterSpacing="0.1em" mb={3}>
+            MY BOOKS
+          </Text>
+          <VStack align="stretch" spacing={2}>
+            {selectedBooks.map((book) => (
+              <Box
+                key={book.id}
+                p={4}
+                bg="white"
+                borderRadius="2xl"
+                boxShadow="0 2px 8px rgba(0,0,0,0.06)"
+                cursor="pointer"
+                transition="all 0.2s"
+                _hover={{ boxShadow: "0 4px 16px rgba(0,0,0,0.1)", transform: "translateY(-1px)" }}
+                onClick={() => navigate(`/book/${book.id}`)}
+              >
+                <HStack justify="space-between">
                   <Text fontSize="sm" color="#3a3a3a" fontWeight="medium">
                     {book.volumeInfo.title}
                   </Text>
-                  <Text fontSize="xs" color="#b0a99a" mt={0.5}>
-                    {book.volumeInfo.authors?.join(", ")}
-                  </Text>
-                </Box>
-              ))}
-            </VStack>
-          </Box>
-        )}
+                  {bookStatuses[book.id] === "finished" && (
+                    <Text fontSize="xs" color="#6090b0" bg="#f0f5fa" px={2} py={0.5} borderRadius="full">
+                      読了
+                    </Text>
+                  )}
+                  {bookStatuses[book.id] === "dropped" && (
+                    <Text fontSize="xs" color="#c07070" bg="#fdf0f0" px={2} py={0.5} borderRadius="full">
+                      離脱
+                    </Text>
+                  )}
+                </HStack>
+                <Text fontSize="xs" color="#b0a99a" mt={0.5}>
+                  {book.volumeInfo.authors?.join(", ")}
+                </Text>
+              </Box>
+            ))}
+          </VStack>
+        </Box>
+      )}
 
         <Box mb={6}>
           <Text fontSize="xs" fontWeight="bold" color="#9a9a8a" letterSpacing="0.1em" mb={3}>

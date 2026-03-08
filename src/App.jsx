@@ -9,6 +9,7 @@ import BookDetail from "./BookDetail";
 function App() {
   const [user, setUser] = useState(null);
   const [selectedBooks, setSelectedBooks] = useState([]);
+  const [bookStatuses, setBookStatuses] = useState({});
 
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, (currentUser) => {
@@ -59,8 +60,8 @@ function App() {
         </HStack>
       </Box>
       <Routes>
-        <Route path="/" element={<BookSearch user={user} selectedBooks={selectedBooks} setSelectedBooks={setSelectedBooks} />} />
-        <Route path="/book/:bookId" element={<BookDetail user={user} />} />
+        <Route path="/" element={<BookSearch user={user} selectedBooks={selectedBooks} setSelectedBooks={setSelectedBooks} bookStatuses={bookStatuses} />} />
+        <Route path="/book/:bookId" element={<BookDetail user={user} setBookStatuses={setBookStatuses} />} />
       </Routes>
     </Box>
   );

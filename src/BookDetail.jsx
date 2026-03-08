@@ -9,7 +9,7 @@ import {
 const API_URL = import.meta.env.VITE_API_URL;
 const API_KEY = import.meta.env.VITE_GOOGLE_BOOKS_API_KEY;
 
-function BookDetail({ user }) {
+function BookDetail({ user, setBookStatuses }) {
   const { bookId } = useParams();
   const navigate = useNavigate();
   const [book, setBook] = useState(null);
@@ -17,6 +17,7 @@ function BookDetail({ user }) {
   const [rating, setRating] = useState(3);
   const [records, setRecords] = useState([]);
   const [allRecords, setAllRecords] = useState([]);
+  const [droppedRecords, setDroppedRecords] = useState([]);
 
   useEffect(() => {
     fetch(`https://www.googleapis.com/books/v1/volumes/${bookId}?key=${API_KEY}`)
@@ -30,6 +31,11 @@ function BookDetail({ user }) {
     fetch(`${API_URL}/records/${bookId}/mine?userId=${user.uid}`)
       .then(res => res.json())
       .then(data => setRecords(data));
+
+      fetch(`${API_URL}/records/${bookId}/dropped`)
+      .then(res => res.json())
+      .then(data => setDroppedRecords(data));
+
   }, [bookId]);
 
   const handleRecord = async () => {
@@ -52,6 +58,44 @@ function BookDetail({ user }) {
       return [...filtered, { progress, rating }].sort((a, b) => a.progress - b.progress);
     });
   };
+
+  const handleDrop = async () => {
+  const dropRecord = {
+    bookId,
+    bookTitle: book.volumeInfo.title,
+    progress,
+    rating: 0,
+    userId: user.uid,
+    userDisplayName: user.displayName,
+    dropped: true
+  };
+  await fetch(`${API_URL}/records`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(dropRecord)
+  });
+  setBookStatuses(prev => ({ ...prev, [bookId]: "dropped" }));
+  alert(`${progress}%で離脱記録を保存しました`);
+};
+
+const handleFinish = async () => {
+  const finishRecord = {
+    bookId,
+    bookTitle: book.volumeInfo.title,
+    progress: 100,
+    rating,
+    userId: user.uid,
+    userDisplayName: user.displayName,
+    finished: true
+  };
+  await fetch(`${API_URL}/records`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(finishRecord)
+  });
+  setBookStatuses(prev => ({ ...prev, [bookId]: "finished" }));
+  alert("読了記録を保存しました");
+};
 
   if (!book) return (
     <Box minH="100vh" bg="#f7f6f2" display="flex" alignItems="center" justifyContent="center">
@@ -131,6 +175,24 @@ function BookDetail({ user }) {
             )}
           </SimpleGrid>
         )}
+        {droppedRecords.length > 0 && (
+          <Box bg="white" borderRadius="2xl" boxShadow="0 2px 8px rgba(0,0,0,0.06)" p={4} mb={8}>
+            <Text fontSize="xs" fontWeight="bold" color="#9a9a8a" letterSpacing="0.1em" mb={3}>
+              DROPOUT POINTS
+            </Text>
+            <Text fontSize="xs" color="#b0a99a" mb={3}>
+              {droppedRecords.length}人が途中でやめています
+            </Text>
+            <ResponsiveContainer width="100%" height={120}>
+              <LineChart data={droppedRecords}>
+                <XAxis dataKey="progress" tickFormatter={(v) => `${v}%`} tick={{ fontSize: 10 }} />
+                <YAxis hide />
+                <Tooltip labelFormatter={(l) => `${l}%で離脱`} formatter={() => [""]} />
+                <Line type="monotone" dataKey="progress" stroke="#e0a0a0" strokeWidth={2} dot={{ fill: "#e0a0a0" }} />
+              </LineChart>
+            </ResponsiveContainer>
+          </Box>
+        )}
 
         <Box bg="white" borderRadius="2xl" boxShadow="0 2px 8px rgba(0,0,0,0.06)" p={6}>
           <Text fontSize="xs" fontWeight="bold" color="#9a9a8a" letterSpacing="0.1em" mb={5}>ADD RECORD</Text>
@@ -178,6 +240,30 @@ function BookDetail({ user }) {
           >
             記録する
           </Button>
+          <Button
+          onClick={handleDrop}
+          variant="outline"
+          borderColor="#e0a0a0"
+          color="#c07070"
+          borderRadius="2xl"
+          w="full"
+          mt={3}
+          _hover={{ bg: "#fdf0f0" }}
+        >
+          途中でやめた
+        </Button>
+        <Button
+        onClick={handleFinish}
+        variant="outline"
+        borderColor="#a0c0e0"
+        color="#6090b0"
+        borderRadius="2xl"
+        w="full"
+        mt={3}
+        _hover={{ bg: "#f0f5fa" }}
+      >
+        読了
+      </Button>
         </Box>
 
       </Container>
