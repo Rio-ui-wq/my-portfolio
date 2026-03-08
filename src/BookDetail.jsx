@@ -18,6 +18,7 @@ function BookDetail({ user, setBookStatuses }) {
   const [records, setRecords] = useState([]);
   const [allRecords, setAllRecords] = useState([]);
   const [droppedRecords, setDroppedRecords] = useState([]);
+  const [stats, setStats] = useState(null);
 
   useEffect(() => {
     fetch(`https://www.googleapis.com/books/v1/volumes/${bookId}?key=${API_KEY}`)
@@ -35,6 +36,10 @@ function BookDetail({ user, setBookStatuses }) {
       fetch(`${API_URL}/records/${bookId}/dropped`)
       .then(res => res.json())
       .then(data => setDroppedRecords(data));
+
+      fetch(`${API_URL}/records/${bookId}/stats`)
+      .then(res => res.json())
+      .then(data => setStats(data));
 
   }, [bookId]);
 
@@ -136,6 +141,16 @@ const handleFinish = async () => {
             </Text>
           </Box>
         </HStack>
+
+        {stats && stats.total > 0 && (
+          <Box mt={3} p={3} bg="white" borderRadius="xl" boxShadow="0 2px 8px rgba(0,0,0,0.06)">
+            <Text fontSize="xs" color="#9a9a8a">
+              この本を読んだ <Text as="span" fontWeight="bold" color="#3a3a3a">{stats.total}人</Text> 中{" "}
+              <Text as="span" fontWeight="bold" color="#c07070">{stats.dropped}人</Text> が途中でやめています
+              （離脱率 <Text as="span" fontWeight="bold" color="#c07070">{stats.dropRate}%</Text>）
+            </Text>
+          </Box>
+        )}
 
         {(records.length > 0 || allRecords.length > 0) && (
           <SimpleGrid columns={{ base: 1, md: 2 }} spacing={6} mb={8}>
