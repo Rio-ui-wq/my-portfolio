@@ -1,16 +1,66 @@
-# React + Vite
+# 読書離脱率記録アプリ
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+読書中の面白さを記録し、全ユーザーの離脱率を可視化するWebアプリです。
+作家や読者が「どのページで読むのをやめたか」を共有・分析できます。
 
-Currently, two official plugins are available:
+## デモ
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Babel](https://babeljs.io/) (or [oxc](https://oxc.rs) when used in [rolldown-vite](https://vite.dev/guide/rolldown)) for Fast Refresh
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/) for Fast Refresh
+https://my-portfolio-orpin-beta-85.vercel.app
 
-## React Compiler
+## 技術スタック
 
-The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
+**フロントエンド**
+- React + Vite
+- Chakra UI
+- Recharts
+- Firebase Authentication（Googleログイン）
+- React Router
 
-## Expanding the ESLint configuration
+**バックエンド**
+- Node.js + Express
+- MongoDB Atlas（Mongoose）
+- Render（デプロイ）
 
-If you are developing a production application, we recommend using TypeScript with type-aware lint rules enabled. Check out the [TS template](https://github.com/vitejs/vite/tree/main/packages/create-vite/template-react-ts) for information on how to integrate TypeScript and [`typescript-eslint`](https://typescript-eslint.io) in your project.
+**外部API**
+- Google Books API
+
+## 主な機能
+
+- Googleアカウントでログイン
+- タイトル・著者名で本を検索して追加
+- 読書進捗と面白さ（5段階）を記録
+- 途中でやめた・読了の記録
+- 自分の記録グラフ表示
+- 全ユーザーの記録グラフ表示
+- 本ごとの離脱率統計表示
+- レスポンシブデザイン（PC・スマホ対応）
+
+## ローカル起動方法
+
+### バックエンド
+```bash
+cd backend
+npm install
+node server.js
+```
+
+### フロントエンド
+```bash
+cd my-portfolio
+npm install
+npm run dev
+```
+
+## 環境変数
+
+**フロントエンド（.env）**
+```
+VITE_GOOGLE_BOOKS_API_KEY=your_api_key
+VITE_API_URL=http://localhost:3001
+```
+
+**バックエンド（.env）**
+```
+MONGO_URI=your_mongodb_uri
+PORT=3001
+```

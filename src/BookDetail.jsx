@@ -79,6 +79,9 @@ function BookDetail({ user, setBookStatuses }) {
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify(dropRecord)
   });
+  await fetch(`${API_URL}/records/${bookId}/status?userId=${user.uid}`, {
+  method: "DELETE"
+});
   setBookStatuses(prev => ({ ...prev, [bookId]: "dropped" }));
   alert(`${progress}%で離脱記録を保存しました`);
 };
@@ -98,6 +101,9 @@ const handleFinish = async () => {
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify(finishRecord)
   });
+  await fetch(`${API_URL}/records/${bookId}/status?userId=${user.uid}`, {
+  method: "DELETE"
+});
   setBookStatuses(prev => ({ ...prev, [bookId]: "finished" }));
   alert("読了記録を保存しました");
 };

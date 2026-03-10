@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import {
   Box, Heading, Input, Button, Text, VStack, HStack,
@@ -8,9 +8,26 @@ import {
 const API_KEY = import.meta.env.VITE_GOOGLE_BOOKS_API_KEY;
 
 function BookSearch({ user, selectedBooks, setSelectedBooks, bookStatuses }) {
+  const API_URL = import.meta.env.VITE_API_URL;
   const navigate = useNavigate();
   const [keyword, setKeyword] = useState("");
   const [books, setBooks] = useState([]);
+  useEffect(() => {
+  if (!user) return;
+  fetch(`${API_URL}/bookshelf/${user.uid}`)
+    .then(res => res.json())
+    .then(data => {
+      const books = data.map(item => ({
+        id: item.bookId,
+        volumeInfo: {
+          title: item.bookTitle,
+          authors: item.bookAuthor ? [item.bookAuthor] : [],
+          imageLinks: item.bookThumbnail ? { thumbnail: item.bookThumbnail } : undefined
+        }
+      }));
+      setSelectedBooks(books);
+    });
+}, [user]);
 
 
   const handleSearch = async () => {
@@ -153,11 +170,22 @@ function BookSearch({ user, selectedBooks, setSelectedBooks, bookStatuses }) {
                 fontSize="xs"
                 fontWeight="medium"
                 _hover={{ bg: "#e8f0ec", color: "#7a9e8e" }}
-                onClick={() => {
-                  if (!selectedBooks.find(b => b.id === book.id)) {
-                    setSelectedBooks([...selectedBooks, book]);
-                  }
-                }}
+                onClick={async () => {
+                    if (!selectedBooks.find(b => b.id === book.id)) {
+                      setSelectedBooks([...selectedBooks, book]);
+                      await fetch(`${API_URL}/bookshelf`, {
+                        method: "POST",
+                        headers: { "Content-Type": "application/json" },
+                        body: JSON.stringify({
+                          userId: user.uid,
+                          bookId: book.id,
+                          bookTitle: book.volumeInfo.title,
+                          bookAuthor: book.volumeInfo.authors?.join(", "),
+                          bookThumbnail: book.volumeInfo.imageLinks?.thumbnail
+                        })
+                      });
+                    }
+                  }}
               >
                 {selectedBooks.find(b => b.id === book.id) ? "追加済み" : "追加"}
               </Button>
