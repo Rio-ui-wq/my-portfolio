@@ -77,30 +77,51 @@ function BookSearch({ user, selectedBooks, setSelectedBooks, bookStatuses }) {
                 bg="white"
                 borderRadius="2xl"
                 boxShadow="0 2px 8px rgba(0,0,0,0.06)"
-                cursor="pointer"
                 transition="all 0.2s"
                 _hover={{ boxShadow: "0 4px 16px rgba(0,0,0,0.1)", transform: "translateY(-1px)" }}
-                onClick={() => navigate(`/book/${book.id}`)}
               >
-                <HStack justify="space-between">
-                  <Text fontSize="sm" color="#3a3a3a" fontWeight="medium">
-                    {book.volumeInfo.title}
-                  </Text>
-                  {bookStatuses[book.id] === "finished" && (
-                    <Text fontSize="xs" color="#6090b0" bg="#f0f5fa" px={2} py={0.5} borderRadius="full">
-                      読了
+                <HStack justify="space-between" align="center">
+                  <Box
+                    flex="1"
+                    cursor="pointer"
+                    onClick={() => navigate(`/book/${book.id}`)}
+                  >
+                    <HStack justify="space-between">
+                      <Text fontSize="sm" color="#3a3a3a" fontWeight="medium">
+                        {book.volumeInfo.title}
+                      </Text>
+                      {bookStatuses[book.id] === "finished" && (
+                        <Text fontSize="xs" color="#6090b0" bg="#f0f5fa" px={2} py={0.5} borderRadius="full">
+                          読了
+                        </Text>
+                      )}
+                      {bookStatuses[book.id] === "dropped" && (
+                        <Text fontSize="xs" color="#c07070" bg="#fdf0f0" px={2} py={0.5} borderRadius="full">
+                          離脱
+                        </Text>
+                      )}
+                    </HStack>
+                    <Text fontSize="xs" color="#b0a99a" mt={0.5}>
+                      {book.volumeInfo.authors?.join(", ")}
                     </Text>
-                  )}
-                  {bookStatuses[book.id] === "dropped" && (
-                    <Text fontSize="xs" color="#c07070" bg="#fdf0f0" px={2} py={0.5} borderRadius="full">
-                      離脱
-                    </Text>
-                  )}
-                </HStack>
-                <Text fontSize="xs" color="#b0a99a" mt={0.5}>
-                  {book.volumeInfo.authors?.join(", ")}
-                </Text>
-              </Box>
+                  </Box>
+    <Button
+      size="xs"
+      variant="ghost"
+      color="#c0b9aa"
+      _hover={{ color: "#c07070" }}
+      onClick={async (e) => {
+        e.stopPropagation();
+        await fetch(`${API_URL}/bookshelf/${user.uid}/${book.id}`, {
+          method: "DELETE"
+        });
+        setSelectedBooks(selectedBooks.filter(b => b.id !== book.id));
+      }}
+    >
+      ✕
+    </Button>
+  </HStack>
+</Box>
             ))}
           </VStack>
         </Box>
