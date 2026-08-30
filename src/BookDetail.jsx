@@ -1,6 +1,6 @@
 import { useParams, useNavigate } from "react-router-dom";
 import { useState, useEffect } from "react";
-import { LineChart, Line, XAxis, YAxis, Tooltip, ResponsiveContainer } from "recharts";
+import { LineChart, Line, BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer } from "recharts";
 import {
   Box, Text, Button, Container, HStack, VStack,
   Slider, SliderTrack, SliderFilledTrack, SliderThumb, SimpleGrid, Image
@@ -8,6 +8,38 @@ import {
 
 const API_URL = import.meta.env.VITE_API_URL;
 const API_KEY = import.meta.env.VITE_GOOGLE_BOOKS_API_KEY;
+
+// 進捗を10%刻みでグループ化、平均評価計算
+function groupByAverageRating(records, bucketSize = 10) {
+  const buckets = {};
+  records.forEach(r => {
+    const bucket = Math.floor(r.progress / bucketSize) * bucketSize;
+    if (!buckets[bucket]) buckets[bucket] = { sum: 0, count: 0 };
+    buckets[bucket].sum += r.rating;
+    buckets[bucket].count += 1;
+  });
+  return Object.keys(buckets)
+    .map(k => ({
+      progress: Number(k),
+      rating: Number((buckets[k].sum / buckets[k].count).toFixed(1))
+    }))
+    .sort((a, b) => a.progress - b.progress);
+}
+
+// 進捗を10%刻みでグループ化、離脱人数カウント
+function groupByDropoutCount(records, bucketSize = 10) {
+  const buckets = {};
+  records.forEach(r => {
+    const bucket = Math.floor(r.progress / bucketSize) * bucketSize;
+    buckets[bucket] = (buckets[bucket] || 0) + 1;
+  });
+  return Object.keys(buckets)
+    .map(k => ({
+      progress: Number(k),
+      count: buckets[k]
+    }))
+    .sort((a, b) => a.progress - b.progress);
+}
 
 function BookDetail({ user, setBookStatuses }) {
   const { bookId } = useParams();
@@ -79,8 +111,10 @@ function BookDetail({ user, setBookStatuses }) {
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify(dropRecord)
   });
-  await fetch(`${API_URL}/records/${bookId}/status?userId=${user.uid}`, {
-  method: "DELETE"
+  await fetch(`${API_URL}/records`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(dropRecord)
 });
   setBookStatuses(prev => ({ ...prev, [bookId]: "dropped" }));
   alert(`${progress}%で離脱記録を保存しました`);
@@ -101,8 +135,10 @@ const handleFinish = async () => {
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify(finishRecord)
   });
-  await fetch(`${API_URL}/records/${bookId}/status?userId=${user.uid}`, {
-  method: "DELETE"
+  await fetch(`${API_URL}/records`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(finishRecord)
 });
   setBookStatuses(prev => ({ ...prev, [bookId]: "finished" }));
   alert("読了記録を保存しました");
@@ -185,7 +221,7 @@ const handleFinish = async () => {
               <Box bg="white" borderRadius="2xl" boxShadow="0 2px 8px rgba(0,0,0,0.06)" p={4}>
                 <Text fontSize="xs" fontWeight="bold" color="#9a9a8a" letterSpacing="0.1em" mb={3}>ALL RECORDS</Text>
                 <ResponsiveContainer width="100%" height={150}>
-                  <LineChart data={allRecords}>
+                  <LineChart data={groupByAverageRating(allRecords)}>
                     <XAxis dataKey="progress" tickFormatter={(v) => `${v}%`} tick={{ fontSize: 10 }} />
                     <YAxis domain={[1, 5]} ticks={[1, 2, 3, 4, 5]} tick={{ fontSize: 10 }} />
                     <Tooltip formatter={(v) => [`${v}`, "面白さ"]} labelFormatter={(l) => `${l}%時点`} />
@@ -205,12 +241,12 @@ const handleFinish = async () => {
               {droppedRecords.length}人が途中でやめています
             </Text>
             <ResponsiveContainer width="100%" height={120}>
-              <LineChart data={droppedRecords}>
-                <XAxis dataKey="progress" tickFormatter={(v) => `${v}%`} tick={{ fontSize: 10 }} />
-                <YAxis hide />
-                <Tooltip labelFormatter={(l) => `${l}%で離脱`} formatter={() => [""]} />
-                <Line type="monotone" dataKey="progress" stroke="#e0a0a0" strokeWidth={2} dot={{ fill: "#e0a0a0" }} />
-              </LineChart>
+              <BarChart data={groupByDropoutCount(droppedRecords)}>
+                <XAxis dataKey="progress" tickFormatter={(v) => `${v}%台`} tick={{ fontSize: 10 }} />
+                <YAxis allowDecimals={false} tick={{ fontSize: 10 }} />
+                <Tooltip formatter={(v) => [`${v}人`, "離脱"]} labelFormatter={(l) => `${l}%台`} />
+                <Bar dataKey="count" fill="#e0a0a0" radius={[4, 4, 0, 0]} />
+              </BarChart>
             </ResponsiveContainer>
           </Box>
         )}
